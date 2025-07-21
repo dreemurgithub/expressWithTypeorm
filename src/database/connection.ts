@@ -2,12 +2,6 @@ import { Client } from 'pg';
 import { AppDataSource } from '../data-source';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 
-/**
- * Two approaches to avoid TypeScript typing issues:
- * 1. initializeDatabase() - Uses type guards to extract config from DataSource
- * 2. initializeDatabaseSimple() - Uses environment variables directly (recommended)
- */
-
 interface DatabaseConfig {
   host: string;
   port: number;
@@ -15,25 +9,11 @@ interface DatabaseConfig {
   password: string;
   database: string;
 }
-
-/**
- * Type guard to check if DataSource is using PostgreSQL
- */
 const isPostgresDataSource = (options: any): options is PostgresConnectionOptions => {
   return options.type === 'postgres';
 };
-
-/**
- * Run all pending migrations
- */
-
-/**
- * Creates the database if it doesn't exist
- */
 export const createDatabaseIfNotExists = async (config: DatabaseConfig): Promise<void> => {
   const { database, ...connectionConfig } = config;
-  
-  // Create connection to default 'postgres' database
   const client = new Client({
     host: connectionConfig.host,
     port: connectionConfig.port,
@@ -66,17 +46,11 @@ export const createDatabaseIfNotExists = async (config: DatabaseConfig): Promise
     await client.end();
   }
 };
-
-/**
- * Extract database config from DataSource options
- */
 const extractDatabaseConfig = (): DatabaseConfig => {
   if (!isPostgresDataSource(AppDataSource.options)) {
     throw new Error('This function only supports PostgreSQL databases');
   }
-
   const options = AppDataSource.options as PostgresConnectionOptions;
-  
   return {
     host: options.host || 'localhost',
     port: options.port || 5432,
@@ -113,40 +87,6 @@ export const initializeDatabase = async (): Promise<void> => {
   }
 };
 
-// Alternative approach using environment variables directly
-export const initializeDatabaseSimple = async (): Promise<void> => {
-  try {
-    // Use environment variables directly to avoid typing issues
-    const config: DatabaseConfig = {
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432'),
-      user: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD || '',
-      database: process.env.DB_NAME || '',
-    };
-
-    if (!config.database) {
-      throw new Error('Database name is required (DB_NAME environment variable)');
-    }
-
-    // Create database if it doesn't exist
-    await createDatabaseIfNotExists(config);
-
-    // Initialize the data source
-    if (!AppDataSource.isInitialized) {
-      console.log('Initializing database connection...');
-      await AppDataSource.initialize();
-      console.log('Database connection initialized successfully');
-    }
-
-    // Run pending migrations
-    await runMigrations();
-    
-  } catch (error) {
-    console.error('Database initialization failed:', error);
-    throw error;
-  }
-};
 export const runMigrations = async (): Promise<void> => {
   try {
     console.log('Running database migrations...');
