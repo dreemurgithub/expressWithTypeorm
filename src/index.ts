@@ -9,6 +9,7 @@ import { AppDataSource } from './data-source';
 import { createRoutes } from './routes';
 import { errorHandler } from './middleware/errorHandler';
 import { notFound } from './middleware/notFound';
+import { initializeDatabase } from './database/connection';
 
 dotenv.config();
 
@@ -40,13 +41,12 @@ const createApp = async () => {
 
 const startServer = async () => {
   try {
+    await initializeDatabase()
     // Initialize database connection
-    await AppDataSource.initialize();
-    console.log('Database connection established');
 
     // Run migrations
-    await AppDataSource.runMigrations();
-    console.log('Migrations completed');
+    // await AppDataSource.runMigrations();
+    // console.log('Migrations completed');
 
     // Create and start app
     const app = await createApp();

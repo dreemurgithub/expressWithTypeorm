@@ -5,7 +5,19 @@ import { Post } from './entities/Post';
 import { Comment } from './entities/Comment';
 import { Role } from './entities/Role';
 import dotenv, {config} from 'dotenv'
+import { Client } from 'pg';
+
 config()
+
+interface DatabaseConfig {
+  host: string;
+  port: number;
+  user: string;
+  password: string;
+  database: string;
+}
+
+
 
 export const AppDataSource = new DataSource({
   type: 'postgres', // or 'mysql'
@@ -20,3 +32,6 @@ export const AppDataSource = new DataSource({
   migrations: ['src/migrations/*.ts'],
   subscribers: ['src/subscribers/*.ts'],
 });
+
+
+
